@@ -103,7 +103,6 @@ test = do
         $ VRecord
         $ Record
             [("r", VRecord $ Record [("x", VInt 123)])]
-
     assertTest
         "valueP VRecord Record List"
         valueP
@@ -112,4 +111,15 @@ test = do
         $ Record
             [ ("r", VRecord $ Record [("x", VInt 123)])
             , ("l", VList [VString "hello", VString "world"])
+            ]
+    assertTest
+        "valueP VRecord of list and record and natural and string"
+        valueP
+        "{ l : [hello, 123], r : {x:123}, i: 123, s: hello}"
+        $ VRecord
+        $ Record
+            [ ("l", VList [VString "hello", VInt 123])
+            , ("r", VRecord $ Record [("x", VInt 123)])
+            , ("i", VInt 123)
+            , ("s", VString "hello")
             ]
