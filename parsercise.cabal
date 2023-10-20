@@ -25,6 +25,7 @@ common common-options
     , base
     , containers
     , mtl
+    , tree-diff
 
   ghc-options:
     -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates
