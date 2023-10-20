@@ -1,6 +1,5 @@
 {-# LANGUAGE OverloadedLists #-}
 
-import Control.Exception (assert)
 import Control.Monad (unless)
 import Control.Monad.Writer
     ( MonadIO (liftIO)
@@ -8,6 +7,7 @@ import Control.Monad.Writer
     , WriterT
     , execWriterT
     )
+import Data.TreeDiff (Edit, EditExpr, ToExpr, ediff, prettyEditExpr)
 import Parser
     ( eof
     , list
@@ -19,6 +19,7 @@ import Parser
     )
 import Parser.Type (ParserS, runParser)
 import System.Exit (exitFailure)
+import Text.PrettyPrint (render)
 import Value
     ( Record (Record)
     , Value (VInt, VList, VRecord, VString)
@@ -27,28 +28,40 @@ import Value
 main :: IO ()
 main = do
     bs <- execWriterT test
-    unless (and bs) exitFailure
+    unless (null bs) exitFailure
 
 runTest :: ParserS a -> String -> Maybe a
 runTest p = fmap snd . runParser (p <* eof)
 
-assert' :: String -> Bool -> IO ()
-assert' x True = putStrLn $ "OK: " ++ x
-assert' x False = putStrLn $ "FAIL: " ++ x
+data Result = ParserProblem | ValueProblem (Edit EditExpr) | Ok
+
+assert' :: String -> Result -> IO ()
+assert' x Ok = putStrLn $ "Ok: " ++ x
+assert' x ParserProblem = putStrLn $ "Parsing problem in: " ++ x
+assert' x (ValueProblem e) = do
+    putStrLn $ "Value difference on: " ++ x
+    putStrLn $ render $ prettyEditExpr e
 
 assertTest
-    :: Eq a
+    :: (Eq a, ToExpr a)
     => String
     -> ParserS a
     -> String
     -> a
-    -> WriterT [Bool] IO ()
+    -> WriterT [()] IO ()
 assertTest name p input expected = do
-    let result = runTest p input == Just expected
-    liftIO $ assert' name result
-    tell [result]
+    case runTest p input of
+        Just expected' ->
+            if expected == expected'
+                then liftIO $ assert' name Ok
+                else do
+                    liftIO $ assert' name $ ValueProblem $ ediff expected expected'
+                    tell [()]
+        Nothing -> do
+            liftIO $ assert' name ParserProblem
+            tell [()]
 
-test :: WriterT [Bool] IO ()
+test :: WriterT [()] IO ()
 test = do
     assertTest "skipSpaces" skipSpaces "   " ()
     assertTest "word" word "hello" "hello"

@@ -74,11 +74,15 @@ test-suite test-solution
   type:           exitcode-stdio-1.0
   hs-source-dirs: test
   main-is:        Spec.hs
-  build-depends:  parsercise:{parsercise, solution}
+  build-depends:
+    , parsercise:{parsercise, solution}
+    , pretty
 
 test-suite test-challenge
   import:         common-options
   type:           exitcode-stdio-1.0
   hs-source-dirs: test
   main-is:        Spec.hs
-  build-depends:  parsercise:{parsercise, challenge}
+  build-depends:
+    , parsercise:{parsercise, challenge}
+    , pretty
