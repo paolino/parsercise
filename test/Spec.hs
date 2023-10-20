@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedLists #-}
 
 import Control.Exception (assert)
+import Control.Monad (unless)
 import Control.Monad.Writer
     ( MonadIO (liftIO)
     , MonadWriter (tell)
@@ -17,6 +18,7 @@ import Parser
     , word
     )
 import Parser.Type (ParserS, runParser)
+import System.Exit (exitFailure)
 import Value
     ( Record (Record)
     , Value (VInt, VList, VRecord, VString)
@@ -25,7 +27,7 @@ import Value
 main :: IO ()
 main = do
     bs <- execWriterT test
-    assert (and bs) $ pure ()
+    unless (and bs) exitFailure
 
 runTest :: ParserS a -> String -> Maybe a
 runTest p = fmap snd . runParser (p <* eof)
