@@ -48,7 +48,7 @@ instance Functor (Parser s) where
 
 instance Applicative (Parser s) where
     pure :: a -> Parser s a
-    pure x = Parser $ \input -> Just (input, x)
+    pure x = error "TODO"
     (<*>) :: Parser s (a -> b) -> Parser s a -> Parser s b
     Parser p1 <*> Parser p2 = error "TODO"
 
@@ -58,7 +58,7 @@ instance Monad (Parser s) where
 
 instance Alternative (Parser s) where
     empty :: Parser s a
-    empty = Parser $ const Nothing
+    empty = error "TODO"
     (<|>) :: Parser s a -> Parser s a -> Parser s a
     Parser p1 <|> Parser p2 = error "TODO"
 
